@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { PersonalInfoForm } from "./personal-info-form"
 import { TravelPreferencesForm } from "./travel-preferences-form"
 import { HealthSafetyForm } from "./health-safety-form"
@@ -9,6 +9,7 @@ import { StageIndicator } from "./stage-indicator"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { ChevronLeft, ChevronRight, Send } from "lucide-react"
+import emailjs from "@emailjs/browser"
 
 // Define the form data structure
 export type FormData = {
@@ -51,12 +52,32 @@ const initialFormData: FormData = {
   medicalConditions: "",
 }
 
+// EmailJS configuration - UPDATED with new credentials
+const EMAILJS_CONFIG = {
+  serviceId: "service_vqmm1n9", // Your EmailJS service ID
+  templateId: "mars_app", // Your EmailJS template ID
+  publicKey: "VLu-4f6ZhYVHtqjYN", // Your EmailJS public key
+}
+
 export default function ApplicationForm() {
   const [currentStage, setCurrentStage] = useState(1)
   const [formData, setFormData] = useState<FormData>(initialFormData)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submissionResult, setSubmissionResult] = useState<{
+    success: boolean
+    message: string
+    formattedData?: string
+    recipientEmail?: string
+    error?: string
+  } | null>(null)
+
+  // Initialize EmailJS
+  useEffect(() => {
+    emailjs.init(EMAILJS_CONFIG.publicKey)
+    console.log("EmailJS initialized with public key:", EMAILJS_CONFIG.publicKey)
+  }, [])
 
   // Update form data
   const handleChange = (field: keyof FormData, value: string) => {
@@ -104,10 +125,12 @@ export default function ApplicationForm() {
 
     if (!formData.phone.trim()) {
       newErrors.phone = "Phone number is required"
-    } else if (
-      !/^\+?[0-9]{1,4}[ -]?($$[0-9]{1,4}$$)?[ -]?[0-9]{1,4}[ -]?[0-9]{1,4}[ -]?[0-9]{1,9}$/.test(formData.phone)
-    ) {
-      newErrors.phone = "Please enter a valid international phone number (e.g., +1 (123) 456-7890)"
+    } else {
+      // Fixed phone validation regex
+      const phoneRegex = /^\+?[0-9]{1,4}[ -]?($$[0-9]{1,4}$$)?[ -]?[0-9]{1,4}[ -]?[0-9]{1,4}[ -]?[0-9]{1,9}$/
+      if (!phoneRegex.test(formData.phone)) {
+        newErrors.phone = "Please enter a valid international phone number (e.g., +1 (123) 456-7890)"
+      }
     }
 
     setErrors(newErrors)
@@ -166,12 +189,12 @@ export default function ApplicationForm() {
 
     if (!formData.emergencyContactPhone.trim()) {
       newErrors.emergencyContactPhone = "Emergency contact phone is required"
-    } else if (
-      !/^\+?[0-9]{1,4}[ -]?($$[0-9]{1,4}$$)?[ -]?[0-9]{1,4}[ -]?[0-9]{1,4}[ -]?[0-9]{1,9}$/.test(
-        formData.emergencyContactPhone,
-      )
-    ) {
-      newErrors.emergencyContactPhone = "Please enter a valid international phone number (e.g., +1 (123) 456-7890)"
+    } else {
+      // Fixed phone validation regex
+      const phoneRegex = /^\+?[0-9]{1,4}[ -]?($$[0-9]{1,4}$$)?[ -]?[0-9]{1,4}[ -]?[0-9]{1,4}[ -]?[0-9]{1,9}$/
+      if (!phoneRegex.test(formData.emergencyContactPhone)) {
+        newErrors.emergencyContactPhone = "Please enter a valid international phone number (e.g., +1 (123) 456-7890)"
+      }
     }
 
     setErrors(newErrors)
@@ -203,18 +226,140 @@ export default function ApplicationForm() {
     setCurrentStage((prev) => prev - 1)
   }
 
+  // Format the form data for email with HTML
+  const getFormattedHtml = () => {
+    return `
+      <h2 style="color: #4a5ad3;">Mars Colonization Program - Application Details</h2>
+      <p>Dear ${formData.fullName},</p>
+      <p>Thank you for submitting your application to the Mars Colonization Program. Below is a copy of your application details:</p>
+      
+      <div style="background-color: #f0f4fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3 style="color: #4a5ad3; border-bottom: 1px solid #cbd8f7; padding-bottom: 10px;">Personal Information</h3>
+        <p><strong>Full Name:</strong> ${formData.fullName}</p>
+        <p><strong>Date of Birth:</strong> ${formData.dateOfBirth}</p>
+        <p><strong>Nationality:</strong> ${formData.nationality}</p>
+        <p><strong>Email:</strong> ${formData.email}</p>
+        <p><strong>Phone:</strong> ${formData.phone}</p>
+        
+        <h3 style="color: #4a5ad3; border-bottom: 1px solid #cbd8f7; padding-bottom: 10px; margin-top: 20px;">Travel Preferences</h3>
+        <p><strong>Departure Date:</strong> ${formData.departureDate}</p>
+        <p><strong>Return Date:</strong> ${formData.returnDate}</p>
+        <p><strong>Accommodation:</strong> ${formData.accommodation}</p>
+        <p><strong>Special Requests:</strong> ${formData.specialRequests || "None"}</p>
+        
+        <h3 style="color: #4a5ad3; border-bottom: 1px solid #cbd8f7; padding-bottom: 10px; margin-top: 20px;">Health and Safety</h3>
+        <p><strong>Health Declaration:</strong> ${
+          formData.healthDeclaration === "yes" ? "Confirmed Good Health" : "Has Health Concerns"
+        }</p>
+        <p><strong>Emergency Contact:</strong> ${formData.emergencyContactName}</p>
+        <p><strong>Emergency Phone:</strong> ${formData.emergencyContactPhone}</p>
+        <p><strong>Medical Conditions:</strong> ${formData.medicalConditions || "None reported"}</p>
+      </div>
+      
+      <p><strong>Submission Date:</strong> ${new Date().toLocaleString()}</p>
+      
+      <h3 style="color: #4a5ad3; margin-top: 20px;">Next Steps:</h3>
+      <ul>
+        <li>Our team will review your application within 7-10 business days</li>
+        <li>You'll receive an email with further instructions for the medical examination</li>
+        <li>Begin your pre-flight training program while waiting for approval</li>
+      </ul>
+      
+      <p>If you have any questions, please contact our support team.</p>
+      
+      <p>Best regards,<br>
+      Mars Colonization Program Team</p>
+    `
+  }
+
+  // Send email directly using EmailJS API
+  const sendDirectEmail = async () => {
+    try {
+      const formattedHtml = getFormattedHtml()
+
+      // Log the recipient email for debugging
+      console.log("Sending email to:", formData.email)
+
+      // Create a direct API call to EmailJS
+      const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          service_id: EMAILJS_CONFIG.serviceId,
+          template_id: EMAILJS_CONFIG.templateId,
+          user_id: EMAILJS_CONFIG.publicKey,
+          template_params: {
+            to_name: formData.fullName,
+            to_email: formData.email, // User's email from the form
+            from_name: "Mars Colonization Program",
+            applicant_name: formData.fullName,
+            applicant_email: formData.email,
+            message: formattedHtml,
+          },
+        }),
+      })
+
+      if (response.ok) {
+        console.log("Email sent successfully via direct API call")
+        return { success: true }
+      } else {
+        const errorData = await response.text()
+        console.error("Email API error:", errorData)
+        return { success: false, error: errorData }
+      }
+    } catch (error) {
+      console.error("Direct email sending failed:", error)
+      return { success: false, error }
+    }
+  }
+
   // Handle form submission
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const isValid = validateStage3()
 
     if (isValid) {
       setIsSubmitting(true)
-      // Simulate API call
-      setTimeout(() => {
-        console.log("Form submitted:", formData)
+
+      try {
+        // Log the form data for debugging
+        console.log("Form data being submitted:", formData)
+
+        // Send email directly using the EmailJS API
+        const emailResult = await sendDirectEmail()
+
+        if (emailResult.success) {
+          // Set submission result with success
+          setSubmissionResult({
+            success: true,
+            message: "Application submitted successfully! A copy has been sent to your email address.",
+            recipientEmail: formData.email,
+            formattedData: JSON.stringify(formData, null, 2),
+          })
+        } else {
+          // Set submission result with error
+          setSubmissionResult({
+            success: false,
+            message: "Application submitted but email delivery failed.",
+            error: "Failed to send email. Please check your email address.",
+            recipientEmail: formData.email,
+            formattedData: JSON.stringify(formData, null, 2),
+          })
+        }
+
+        // Set submission as complete
         setIsSubmitting(false)
         setIsSubmitted(true)
-      }, 2000)
+      } catch (error: any) {
+        console.error("Error submitting form:", error)
+        setIsSubmitting(false)
+        setSubmissionResult({
+          success: false,
+          message: "Failed to submit application",
+          error: error.message || "Unknown error occurred",
+        })
+      }
     }
   }
 
@@ -224,10 +369,11 @@ export default function ApplicationForm() {
     setCurrentStage(1)
     setIsSubmitted(false)
     setErrors({})
+    setSubmissionResult(null)
   }
 
   if (isSubmitted) {
-    return <SuccessMessage onReset={handleReset} />
+    return <SuccessMessage onReset={handleReset} emailData={submissionResult} />
   }
 
   return (
