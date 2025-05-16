@@ -57,6 +57,8 @@ const EMAILJS_CONFIG = {
   serviceId: "service_vqmm1n9", // Your EmailJS service ID
   templateId: "mars_app", // Your EmailJS template ID
   publicKey: "VLu-4f6ZhYVHtqjYN", // Your EmailJS public key
+  // The fixed recipient email - all form submissions will go here
+  recipientEmail: "mounikaprabhamahadasu@gmail.com",
 }
 
 export default function ApplicationForm() {
@@ -230,8 +232,7 @@ export default function ApplicationForm() {
   const getFormattedHtml = () => {
     return `
       <h2 style="color: #4a5ad3;">Mars Colonization Program - Application Details</h2>
-      <p>Dear ${formData.fullName},</p>
-      <p>Thank you for submitting your application to the Mars Colonization Program. Below is a copy of your application details:</p>
+      <p>New application received from: ${formData.fullName} (${formData.email})</p>
       
       <div style="background-color: #f0f4fd; padding: 20px; border-radius: 8px; margin: 20px 0;">
         <h3 style="color: #4a5ad3; border-bottom: 1px solid #cbd8f7; padding-bottom: 10px;">Personal Information</h3>
@@ -257,18 +258,6 @@ export default function ApplicationForm() {
       </div>
       
       <p><strong>Submission Date:</strong> ${new Date().toLocaleString()}</p>
-      
-      <h3 style="color: #4a5ad3; margin-top: 20px;">Next Steps:</h3>
-      <ul>
-        <li>Our team will review your application within 7-10 business days</li>
-        <li>You'll receive an email with further instructions for the medical examination</li>
-        <li>Begin your pre-flight training program while waiting for approval</li>
-      </ul>
-      
-      <p>If you have any questions, please contact our support team.</p>
-      
-      <p>Best regards,<br>
-      Mars Colonization Program Team</p>
     `
   }
 
@@ -278,7 +267,7 @@ export default function ApplicationForm() {
       const formattedHtml = getFormattedHtml()
 
       // Log the recipient email for debugging
-      console.log("Sending email to:", formData.email)
+      console.log("Sending email to fixed recipient:", EMAILJS_CONFIG.recipientEmail)
 
       // Create a direct API call to EmailJS
       const response = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
@@ -291,11 +280,11 @@ export default function ApplicationForm() {
           template_id: EMAILJS_CONFIG.templateId,
           user_id: EMAILJS_CONFIG.publicKey,
           template_params: {
-            to_name: formData.fullName,
-            to_email: formData.email, // User's email from the form
+            to_name: "Mars Administrator", // Name of the recipient
+            to_email: EMAILJS_CONFIG.recipientEmail, // Fixed recipient email
             from_name: "Mars Colonization Program",
             applicant_name: formData.fullName,
-            applicant_email: formData.email,
+            applicant_email: formData.email, // We still include the applicant's email in the message
             message: formattedHtml,
           },
         }),
@@ -333,8 +322,8 @@ export default function ApplicationForm() {
           // Set submission result with success
           setSubmissionResult({
             success: true,
-            message: "Application submitted successfully! A copy has been sent to your email address.",
-            recipientEmail: formData.email,
+            message: "Application submitted successfully!",
+            recipientEmail: EMAILJS_CONFIG.recipientEmail,
             formattedData: JSON.stringify(formData, null, 2),
           })
         } else {
@@ -342,8 +331,8 @@ export default function ApplicationForm() {
           setSubmissionResult({
             success: false,
             message: "Application submitted but email delivery failed.",
-            error: "Failed to send email. Please check your email address.",
-            recipientEmail: formData.email,
+            error: "Failed to send email. Please try again later.",
+            recipientEmail: EMAILJS_CONFIG.recipientEmail,
             formattedData: JSON.stringify(formData, null, 2),
           })
         }

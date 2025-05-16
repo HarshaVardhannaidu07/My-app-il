@@ -53,9 +53,7 @@ export function SuccessMessage({ onReset, emailData }: SuccessMessageProps) {
             {emailData?.success ? (
               <div className="flex items-center justify-center gap-2 text-space-700 bg-green-50 p-3 rounded-md border border-green-100">
                 <Mail className="h-4 w-4 text-green-600" />
-                <span>
-                  Application data sent to: <strong>{emailData.recipientEmail}</strong>
-                </span>
+                <span>Application submitted successfully!</span>
               </div>
             ) : (
               <div className="flex items-start gap-2 text-yellow-800 bg-yellow-50 p-3 rounded-md border border-yellow-100">
