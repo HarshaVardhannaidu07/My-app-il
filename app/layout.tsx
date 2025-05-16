@@ -7,10 +7,13 @@ import { ThemeProvider } from "@/components/theme-provider"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Mars Colonization Program",
-  description: "Apply to join the first wave of Mars colonists",
-    generator: 'v0.dev'
+  title: 'Application of Mars',
+  description: 'Form to Mars',
+  icons: {
+    icon: "/mars.png",
+  },
 }
+
 
 export default function RootLayout({
   children,
