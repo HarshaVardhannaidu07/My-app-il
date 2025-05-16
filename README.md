@@ -60,29 +60,29 @@ This project uses EmailJS to send form submissions via email.
 
 ### 1\. Create an EmailJS Account
 
-* *   Sign up at [https://www.emailjs.com](https://www.emailjs.com)
-*     
-* *   Verify your account via email
-*     
+  *   Sign up at [https://www.emailjs.com](https://www.emailjs.com)
+      
+  *   Verify your account via email
+     
 
 ### 2\. Create an Email Service
 
-* *   Go to **Dashboard → Email Services**
-*     
-* *   Click **“Add New Service”**
-*     
-* *   Choose your email provider (e.g., Gmail)
-*     
-* *   Follow authentication steps
-*     
+  *   Go to **Dashboard → Email Services**
+     
+  *   Click **“Add New Service”**
+     
+  *   Choose your email provider (e.g., Gmail)
+      
+  *   Follow authentication steps
+      
 
 ### 3\. Create an Email Template
 
-* *   Go to **Dashboard → Email Templates**
-*     
-* *   Click **“Create New Template”**
-*     
-* *   Add template variables like:
+  *   Go to **Dashboard → Email Templates**
+     
+  *   Click **“Create New Template”**
+     
+  *   Add template variables like:
 
      {{to\_name}} 
 
