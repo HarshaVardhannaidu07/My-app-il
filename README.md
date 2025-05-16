@@ -21,8 +21,7 @@ A responsive multi-stage application form built with **Next.js** and **Tailwind 
 
 ## 🚀 Live Demo
 
-[View Live Demo](https://mars-colonization-form.vercel.app)  
-*(Replace with your actual deployment URL if different)*
+https://my-app-final-delta.vercel.app/
 
 ---
 
@@ -86,21 +85,19 @@ This project uses EmailJS to send form submissions via email.
 
      {{to\_name}} 
 
-    {{to\_email}} 
+     {{to\_email}} 
 
-    {{from\_name}} 
+     {{from\_name}} 
 
-    {{applicant\_name}}
+     {{applicant\_name}}
 
-    {{applicant\_email}}
+     {{applicant\_email}}
 
-    {{message}}  
+     {{message}}  
 
 ## 🖥️ Development
 
 Run the development server:
-
-  
 
 `npm run dev # or yarn dev`
 
